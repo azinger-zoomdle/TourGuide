@@ -556,4 +556,8 @@ public class TourGuide {
             return 0;
         }
     }
+
+    public FrameLayoutWithHole getOverlay(){
+        return mFrameLayout;
+    }
 }
