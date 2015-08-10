@@ -6,6 +6,7 @@ import android.view.animation.Animation;
 
 /**
  * Created by tanjunrong on 6/20/15.
+ *
  */
 public class Overlay {
     public int mBackgroundColor;

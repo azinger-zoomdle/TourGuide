@@ -87,7 +87,7 @@ public class ToolTip {
      * @return return ToolTip instance for chaining purpose
      */
 //    TODO:
-//    public ToolTip setExitAnimation(Animation exitAnimation){
+//    public ToolTip setExitAnimation(AnimationTool exitAnimation){
 //        mExitAnimation = exitAnimation;
 //        return this;
 //    }

@@ -35,10 +35,11 @@ public class FrameLayoutWithHole extends FrameLayout {
     private Paint mPaint;
     private Paint transparentPaint;
     private View mViewHole; // This is the targeted view to be highlighted, where the hole should be placed
-    private int mRadius;
+    private int mRadius = 0;
     private int [] mPos;
     private float mDensity;
     private Overlay mOverlay;
+    private View mRootView;
 
     private ArrayList<AnimatorSet> mAnimatorSetArrayList;
 
@@ -52,9 +53,10 @@ public class FrameLayoutWithHole extends FrameLayout {
         }
         mAnimatorSetArrayList.add(animatorSet);
     }
+
     private void enforceMotionType(){
         Log.d("tourguide", "enforceMotionType 1");
-        if (mViewHole!=null) {Log.d("tourguide","enforceMotionType 2");
+        if (mViewHole != null) {Log.d("tourguide","enforceMotionType 2");
             if (mMotionType!=null && mMotionType == TourGuide.MotionType.ClickOnly) {
                 Log.d("tourguide","enforceMotionType 3");
                 Log.d("tourguide","only Swiping");
@@ -73,42 +75,45 @@ public class FrameLayoutWithHole extends FrameLayout {
         }
     }
 
-    public FrameLayoutWithHole(Activity context, View view) {
-        this(context, view, TourGuide.MotionType.AllowAll);
-    }
-    public FrameLayoutWithHole(Activity context, View view, TourGuide.MotionType motionType) {
-        this(context, view, motionType, new Overlay());
+    private void initRelativePosition(View view, View rootView) {
+        mPos = new int [2];
+        int [] rootPos = new int [2];
+        rootView.getLocationOnScreen(rootPos);
+        view.getLocationOnScreen(mPos);
+        mPos[0] = mPos[0] - rootPos[0];
+        mPos[1] = mPos[1] - rootPos[1];
     }
 
-    public FrameLayoutWithHole(Activity context, View view, TourGuide.MotionType motionType, Overlay overlay) {
+    private void initRadius(Activity context, int radius) {
+        mDensity = context.getResources().getDisplayMetrics().density;
+        int padding = (int)(20 * mDensity);
+        if (radius <= 0) {
+            if (mViewHole.getHeight() > mViewHole.getWidth()) {
+                mRadius = mViewHole.getHeight() / 2 + padding;
+            } else {
+                mRadius = mViewHole.getWidth() / 2 + padding;
+            }
+        } else {
+            mRadius = radius;
+        }
+    }
+
+    public FrameLayoutWithHole(Activity context, View mHighlightedView, View rootView, TourGuide.MotionType motionType, Overlay overlay, int radius) {
         super(context);
         mActivity = context;
-        mViewHole = view;
+        mViewHole = mHighlightedView;
+        mRootView = rootView;
         init(null, 0);
         enforceMotionType();
         mOverlay = overlay;
 
-        int [] pos = new int[2];
-        mViewHole.getLocationOnScreen(pos);
-        mPos = pos;
+        this.initRelativePosition(mHighlightedView, rootView);
+        this.initRadius(context, radius);
 
-        mDensity = context.getResources().getDisplayMetrics().density;
-        int padding = (int)(20 * mDensity);
-
-        if (mViewHole.getHeight() > mViewHole.getWidth()) {
-            mRadius = mViewHole.getHeight()/2 + padding;
-        } else {
-            mRadius = mViewHole.getWidth()/2 + padding;
-        }
         mMotionType = motionType;
     }
+
     private void init(AttributeSet attrs, int defStyle) {
-        // Load attributes
-//        final TypedArray a = getContext().obtainStyledAttributes(
-//                attrs, FrameLayoutWithHole, defStyle, 0);
-//
-//
-//        a.recycle();
         setWillNotDraw(false);
         // Set up a default TextPaint object
         mTextPaint = new TextPaint();
@@ -138,6 +143,7 @@ public class FrameLayoutWithHole extends FrameLayout {
     }
 
     private boolean mCleanUpLock = false;
+
     protected void cleanUp(){
         if (getParent() != null) {
             if (mOverlay!=null && mOverlay.mExitAnimation!=null) {
@@ -147,6 +153,7 @@ public class FrameLayoutWithHole extends FrameLayout {
             }
         }
     }
+
     private void performOverlayExitAnimation(){
         if (!mCleanUpLock) {
             final FrameLayout _pointerToFrameLayout = this;
@@ -163,6 +170,7 @@ public class FrameLayoutWithHole extends FrameLayout {
             this.startAnimation(mOverlay.mExitAnimation);
         }
     }
+
     /* comment this whole method to cause a memory leak */
     @Override
     protected void onDetachedFromWindow() {
@@ -179,89 +187,6 @@ public class FrameLayoutWithHole extends FrameLayout {
         }
     }
 
-    /** Show an event in the LogCat view, for debugging */
-    private void dumpEvent(MotionEvent event) {
-        String names[] = { "DOWN" , "UP" , "MOVE" , "CANCEL" , "OUTSIDE" ,
-                "POINTER_DOWN" , "POINTER_UP" , "7?" , "8?" , "9?" };
-        StringBuilder sb = new StringBuilder();
-        int action = event.getAction();
-        int actionCode = action & MotionEvent.ACTION_MASK;
-        sb.append("event ACTION_" ).append(names[actionCode]);
-        if (actionCode == MotionEvent.ACTION_POINTER_DOWN
-                || actionCode == MotionEvent.ACTION_POINTER_UP) {
-            sb.append("(pid " ).append(
-                    action >> MotionEvent.ACTION_POINTER_ID_SHIFT);
-            sb.append(")" );
-        }
-        sb.append("[" );
-        for (int i = 0; i < event.getPointerCount(); i++) {
-            sb.append("#" ).append(i);
-            sb.append("(pid " ).append(event.getPointerId(i));
-            sb.append(")=" ).append((int) event.getX(i));
-            sb.append("," ).append((int) event.getY(i));
-            if (i + 1 < event.getPointerCount())
-                sb.append(";" );
-        }
-        sb.append("]" );
-        Log.d("tourguide", sb.toString());
-    }
-
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent ev) {
-        //first check if the location button should handle the touch event
-        dumpEvent(ev);
-        int action = MotionEventCompat.getActionMasked(ev);
-        if(mViewHole != null) {
-            int[] pos = new int[2];
-            mViewHole.getLocationOnScreen(pos);
-            Log.d("tourguide", "[dispatchTouchEvent] mViewHole.getHeight(): "+mViewHole.getHeight());
-            Log.d("tourguide", "[dispatchTouchEvent] mViewHole.getWidth(): "+mViewHole.getWidth());
-
-            Log.d("tourguide", "[dispatchTouchEvent] Touch X(): "+ev.getRawX());
-            Log.d("tourguide", "[dispatchTouchEvent] Touch Y(): "+ev.getRawY());
-
-//            Log.d("tourguide", "[dispatchTouchEvent] X of image: "+pos[0]);
-//            Log.d("tourguide", "[dispatchTouchEvent] Y of image: "+pos[1]);
-
-            Log.d("tourguide", "[dispatchTouchEvent] X lower bound: "+ pos[0]);
-            Log.d("tourguide", "[dispatchTouchEvent] X higher bound: "+(pos[0] +mViewHole.getWidth()));
-
-            Log.d("tourguide", "[dispatchTouchEvent] Y lower bound: "+ pos[1]);
-            Log.d("tourguide", "[dispatchTouchEvent] Y higher bound: "+(pos[1] +mViewHole.getHeight()));
-
-            if(ev.getRawY() >= pos[1] && ev.getRawY() <= (pos[1] + mViewHole.getHeight()) && ev.getRawX() >= pos[0] && ev.getRawX() <= (pos[0] + mViewHole.getWidth())) { //location button event
-                Log.d("tourguide","to the BOTTOM!");
-                Log.d("tourguide",""+ev.getAction());
-
-//                switch(action) {
-//                    case (MotionEvent.ACTION_DOWN) :
-//                        Log.d("tourguide","Action was DOWN");
-//                        return false;
-//                    case (MotionEvent.ACTION_MOVE) :
-//                        Log.d("tourguide","Action was MOVE");
-//                        return true;
-//                    case (MotionEvent.ACTION_UP) :
-//                        Log.d("tourguide","Action was UP");
-////                        ev.setAction(MotionEvent.ACTION_DOWN|MotionEvent.ACTION_UP);
-////                        return super.dispatchTouchEvent(ev);
-//                        return false;
-//                    case (MotionEvent.ACTION_CANCEL) :
-//                        Log.d("tourguide","Action was CANCEL");
-//                        return true;
-//                    case (MotionEvent.ACTION_OUTSIDE) :
-//                        Log.d("tourguide","Movement occurred outside bounds " +
-//                                "of current screen element");
-//                        return true;
-//                    default :
-//                        return super.dispatchTouchEvent(ev);
-//                }
-//                return mViewHole.onTouchEvent(ev);
-
-                return false;
-            }
-        }
-        return super.dispatchTouchEvent(ev);
-    }
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -308,5 +233,86 @@ public class FrameLayoutWithHole extends FrameLayout {
     public int getScreenHeight(Activity activity){
         Display display = activity.getWindowManager().getDefaultDisplay();
         return display.getHeight();
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        //first check if the location button should handle the touch event
+        dumpEvent(ev);
+        int action = MotionEventCompat.getActionMasked(ev);
+        if(mViewHole != null) {
+            int[] pos = new int[2];
+            mViewHole.getLocationOnScreen(pos);
+            Log.d("tourguide", "[dispatchTouchEvent] mViewHole.getHeight(): "+mViewHole.getHeight());
+            Log.d("tourguide", "[dispatchTouchEvent] mViewHole.getWidth(): "+mViewHole.getWidth());
+
+            Log.d("tourguide", "[dispatchTouchEvent] Touch X(): "+ev.getRawX());
+            Log.d("tourguide", "[dispatchTouchEvent] Touch Y(): "+ev.getRawY());
+
+            Log.d("tourguide", "[dispatchTouchEvent] X lower bound: "+ pos[0]);
+            Log.d("tourguide", "[dispatchTouchEvent] X higher bound: "+(pos[0] +mViewHole.getWidth()));
+
+            Log.d("tourguide", "[dispatchTouchEvent] Y lower bound: "+ pos[1]);
+            Log.d("tourguide", "[dispatchTouchEvent] Y higher bound: "+(pos[1] +mViewHole.getHeight()));
+
+            if(ev.getRawY() >= pos[1] && ev.getRawY() <= (pos[1] + mViewHole.getHeight()) && ev.getRawX() >= pos[0] && ev.getRawX() <= (pos[0] + mViewHole.getWidth())) { //location button event
+                Log.d("tourguide","to the BOTTOM!");
+                Log.d("tourguide",""+ev.getAction());
+
+//                switch(action) {
+//                    case (MotionEvent.ACTION_DOWN) :
+//                        Log.d("tourguide","Action was DOWN");
+//                        return false;
+//                    case (MotionEvent.ACTION_MOVE) :
+//                        Log.d("tourguide","Action was MOVE");
+//                        return true;
+//                    case (MotionEvent.ACTION_UP) :
+//                        Log.d("tourguide","Action was UP");
+////                        ev.setAction(MotionEvent.ACTION_DOWN|MotionEvent.ACTION_UP);
+////                        return super.dispatchTouchEvent(ev);
+//                        return false;
+//                    case (MotionEvent.ACTION_CANCEL) :
+//                        Log.d("tourguide","Action was CANCEL");
+//                        return true;
+//                    case (MotionEvent.ACTION_OUTSIDE) :
+//                        Log.d("tourguide","Movement occurred outside bounds " +
+//                                "of current screen element");
+//                        return true;
+//                    default :
+//                        return super.dispatchTouchEvent(ev);
+//                }
+//                return mViewHole.onTouchEvent(ev);
+
+                return false;
+            }
+        }
+        return super.dispatchTouchEvent(ev);
+    }
+
+    /** Show an event in the LogCat view, for debugging */
+    private void dumpEvent(MotionEvent event) {
+        String names[] = { "DOWN" , "UP" , "MOVE" , "CANCEL" , "OUTSIDE" ,
+                "POINTER_DOWN" , "POINTER_UP" , "7?" , "8?" , "9?" };
+        StringBuilder sb = new StringBuilder();
+        int action = event.getAction();
+        int actionCode = action & MotionEvent.ACTION_MASK;
+        sb.append("event ACTION_" ).append(names[actionCode]);
+        if (actionCode == MotionEvent.ACTION_POINTER_DOWN
+                || actionCode == MotionEvent.ACTION_POINTER_UP) {
+            sb.append("(pid " ).append(
+                    action >> MotionEvent.ACTION_POINTER_ID_SHIFT);
+            sb.append(")" );
+        }
+        sb.append("[");
+        for (int i = 0; i < event.getPointerCount(); i++) {
+            sb.append("#" ).append(i);
+            sb.append("(pid " ).append(event.getPointerId(i));
+            sb.append(")=" ).append((int) event.getX(i));
+            sb.append("," ).append((int) event.getY(i));
+            if (i + 1 < event.getPointerCount())
+                sb.append(";" );
+        }
+        sb.append("]");
+        Log.d("tourguide", sb.toString());
     }
 }
