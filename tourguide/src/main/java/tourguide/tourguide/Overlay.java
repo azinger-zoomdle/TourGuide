@@ -30,7 +30,7 @@ public class Overlay {
 
     /**
      * Set background color
-     * @param backgroundColor
+     * @param backgroundColor Tint of thebackground
      * @return return ToolTip instance for chaining purpose
      */
     public Overlay setBackgroundColor(int backgroundColor){
@@ -40,7 +40,7 @@ public class Overlay {
 
     /**
      * Set to true if you want to block all user input to pass through this overlay, set to false if you want to allow user input under the overlay
-     * @param yes_no
+     * @param yes_no true or false
      * @return return Overlay instance for chaining purpose
      */
     public Overlay disableClick(boolean yes_no){
@@ -55,7 +55,7 @@ public class Overlay {
 
     /**
      * Set enter animation
-     * @param enterAnimation
+     * @param enterAnimation Enter animation
      * @return return Overlay instance for chaining purpose
      */
     public Overlay setEnterAnimation(Animation enterAnimation){
@@ -64,7 +64,7 @@ public class Overlay {
     }
     /**
      * Set exit animation
-     * @param exitAnimation
+     * @param exitAnimation Exit animation
      * @return return Overlay instance for chaining purpose
      */
     public Overlay setExitAnimation(Animation exitAnimation){
@@ -74,7 +74,7 @@ public class Overlay {
 
     /**
      * Set onClickListener for the Overlay
-     * @param onClickListener
+     * @param onClickListener onClickListener
      * @return return Overlay instance for chaining purpose
      */
     public Overlay setOnClickListener(View.OnClickListener onClickListener){

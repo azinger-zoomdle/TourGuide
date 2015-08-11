@@ -42,33 +42,15 @@ public class Pointer {
         return this;
     }
 
-    public int getXBasedOnGravity(int width, View mRootView, View mHighlightedView) {
+    public int getX(View mHighlightedView) {
         int [] pos = new int[2];
-        int [] rootPos = new int [2];
-        mRootView.getLocationOnScreen(rootPos);
         mHighlightedView.getLocationOnScreen(pos);
-        int x = pos[0] - rootPos[0];
-        if ((this.mGravity & Gravity.END) == Gravity.END) {
-            return x + mHighlightedView.getWidth() - width;
-        } else if ((this.mGravity & Gravity.START) == Gravity.START) {
-            return x;
-        } else { // this is center
-            return x + mHighlightedView.getWidth() / 2 - width / 2;
-        }
+        return pos[0];
     }
 
-    public int getYBasedOnGravity(int height, View mRootView, View mHighlightedView) {
+    public int getY(View mHighlightedView) {
         int [] pos = new int[2];
-        int [] rootPos = new int [2];
-        mRootView.getLocationOnScreen(rootPos);
         mHighlightedView.getLocationInWindow(pos);
-        int y = pos[1] - rootPos[1];
-        if ((this.mGravity & Gravity.BOTTOM) == Gravity.BOTTOM) {
-            return y + mHighlightedView.getHeight() - height;
-        } else if ((this.mGravity & Gravity.TOP) == Gravity.TOP) {
-            return y;
-        } else { // this is center
-            return y + mHighlightedView.getHeight() / 2 - height / 2;
-        }
+        return pos[1];
     }
 }

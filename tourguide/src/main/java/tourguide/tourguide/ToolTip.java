@@ -8,11 +8,13 @@ import android.view.animation.BounceInterpolator;
 
 /**
  * Created by tanjunrong on 6/17/15.
+ *
  */
 public class ToolTip {
     public String mTitle, mDescription;
     public int mBackgroundColor, mTextColor;
-    public Animation mEnterAnimation, mExitAnimation;
+    public Animation mEnterAnimation;
+    public Animation mExitAnimation;
     public boolean mShadow;
     public int mGravity;
 
@@ -20,7 +22,7 @@ public class ToolTip {
         /* default values */
         mTitle = "";
         mDescription = "";
-        mBackgroundColor = Color.parseColor("#3498db");
+        mBackgroundColor = Color.parseColor("#3A565F");
         mTextColor = Color.parseColor("#FFFFFF");
 
         mEnterAnimation = new AlphaAnimation(0f, 1f);
@@ -32,9 +34,10 @@ public class ToolTip {
         // TODO: exit animation
         mGravity = Gravity.CENTER;
     }
+
     /**
      * Set title text
-     * @param title
+     * @param title title
      * @return return ToolTip instance for chaining purpose
      */
     public ToolTip setTitle(String title){
@@ -44,7 +47,7 @@ public class ToolTip {
 
     /**
      * Set description text
-     * @param description
+     * @param description description
      * @return return ToolTip instance for chaining purpose
      */
     public ToolTip setDescription(String description){
@@ -54,7 +57,7 @@ public class ToolTip {
 
     /**
      * Set background color
-     * @param backgroundColor
+     * @param backgroundColor backgroundColor
      * @return return ToolTip instance for chaining purpose
      */
     public ToolTip setBackgroundColor(int backgroundColor){
@@ -64,7 +67,7 @@ public class ToolTip {
 
     /**
      * Set text color
-     * @param textColor
+     * @param textColor enterAnimation
      * @return return ToolTip instance for chaining purpose
      */
     public ToolTip setTextColor(int textColor){
@@ -74,13 +77,14 @@ public class ToolTip {
 
     /**
      * Set enter animation
-     * @param enterAnimation
+     * @param enterAnimation enterAnimation
      * @return return ToolTip instance for chaining purpose
      */
     public ToolTip setEnterAnimation(Animation enterAnimation){
         mEnterAnimation = enterAnimation;
         return this;
     }
+
     /**
      * Set exit animation
      * @param exitAnimation
@@ -100,9 +104,10 @@ public class ToolTip {
         mGravity = gravity;
         return this;
     }
+
     /**
      * Set if you want to have setShadow
-     * @param shadow
+     * @param shadow shadow
      * @return return ToolTip instance for chaining purpose
      */
     public ToolTip setShadow(boolean shadow){
